@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8prqu3p@5g74ul89l@gw7=d^%qai1m)v(l$9n4kakib$y_3lg%'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-8prqu3p@5g74ul89l@gw7=d^%qai1m)v(l$9n4kakib$y_3lg%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
@@ -86,6 +86,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Use Render's PostgreSQL if available
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
 
 
 # Password validation
