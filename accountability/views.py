@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
+from django.contrib.auth.models import User
 from .models import Goal, DailyUpdate, Partnership, UserProfile
 from .forms import GoalForm, DailyUpdateForm
 
