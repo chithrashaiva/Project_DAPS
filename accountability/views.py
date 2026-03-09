@@ -45,6 +45,12 @@ def dashboard(request):
 
     daily_updates = DailyUpdate.objects.filter(user=request.user).order_by('-date')
     
+    # Calculate missed goals and penalties
+    from django.utils import timezone
+    now = timezone.now().date()
+    missed_goals = goals.filter(deadline__lt=now, is_completed=False)
+    total_penalty_count = missed_goals.count()
+
     if request.method == 'POST':
         goal_form = GoalForm(request.POST)
         if goal_form.is_valid():
@@ -60,6 +66,8 @@ def dashboard(request):
 
     return render(request, 'accountability/dashboard.html', {
         'goals': goals,
+        'missed_goals': missed_goals,
+        'total_penalty_count': total_penalty_count,
         'daily_updates': daily_updates,
         'partner': partner,
         'partner_updates': partner_updates,

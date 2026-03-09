@@ -6,6 +6,30 @@
     <div>
         <h1 class="gradient-text">Welcome, {{ user.username }}</h1>
 
+        {% if total_penalty_count > 0 %}
+        <div class="glass-card"
+            style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; margin-bottom: 2rem;">
+            <h3 style="color: #ef4444; margin-top: 0;">❌ Pending Penalties ({{ total_penalty_count }})</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 1rem;">The following goals missed their deadlines. Time to face
+                the music! 🎶</p>
+            <ul style="list-style: none; padding: 0;">
+                {% for goal in missed_goals %}
+                <li
+                    style="padding: 0.8rem; background: rgba(239, 68, 68, 0.05); border-radius: 8px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #ef4444;">{{ goal.title }}</strong>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">Penalty: {{ goal.penalty|default:"Standard
+                            Punishment" }}</div>
+                    </div>
+                    <a href="{% url 'complete_goal' goal.id %}" class="btn-premium"
+                        style="font-size: 0.7rem; padding: 0.4rem 0.8rem; background: #ef4444; border: none;">Done
+                        Now</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
         <div class="glass-card" style="margin-bottom: 2rem;">
             <h3>Target Goals</h3>
             <ul style="list-style: none; padding: 0;">
