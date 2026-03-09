@@ -1,1 +1,1 @@
-web: gunicorn project_daps.wsgi
+web: gunicorn project_daps.wsgi:application
