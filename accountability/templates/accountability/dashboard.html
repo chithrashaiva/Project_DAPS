@@ -1,0 +1,75 @@
+{% extends 'accountability/base.html' %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- My Goals and Updates -->
+    <div>
+        <h1 class="gradient-text">Welcome, {{ user.username }}</h1>
+
+        <div class="glass-card" style="margin-bottom: 2rem;">
+            <h3>Target Goals</h3>
+            <ul style="list-style: none; padding: 0;">
+                {% for goal in goals %}
+                <li
+                    style="padding: 1rem; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between;">
+                    <span>{{ goal.title }}</span>
+                    <span style="opacity: 0.6;">{{ goal.deadline|default:"No deadline" }}</span>
+                </li>
+                {% empty %}
+                <li>No goals yet. Add one below!</li>
+                {% endfor %}
+            </ul>
+
+            <h4 style="margin-top: 2rem;">Add New Goal</h4>
+            <form method="post">
+                {% csrf_token %}
+                {{ goal_form.as_p }}
+                <button type="submit" class="btn-premium">Add Goal</button>
+            </form>
+        </div>
+
+        <div class="glass-card">
+            <h3>My Daily Logs</h3>
+            {% for update in daily_updates %}
+            <div style="padding: 1rem; border-bottom: 1px solid var(--glass-border);">
+                <strong>{{ update.date }}</strong> - Mood: {{ update.mood_rating }}/5
+                <p style="opacity: 0.8; margin: 0.5rem 0;">{{ update.achievements|truncatewords:20 }}</p>
+            </div>
+            {% empty %}
+            <p>No logs yet. <a href="{% url 'daily_update' %}" style="color: var(--primary);">Submit your first
+                    update!</a></p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Partner Tracking -->
+    <div>
+        <div class="glass-card">
+            <h3>My Accountability Partner</h3>
+            {% if partner %}
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div
+                    style="width: 80px; height: 80px; background: var(--secondary); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">
+                    {{ partner.username|slice:":1"|upper }}
+                </div>
+                <h4>{{ partner.username }}</h4>
+            </div>
+
+            <h4>Recent Partner Activity</h4>
+            {% for update in partner_updates %}
+            <div
+                style="font-size: 0.9rem; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                <strong>{{ update.date }}</strong>
+                <p style="margin: 0.3rem 0;">{{ update.achievements }}</p>
+            </div>
+            {% empty %}
+            <p>No activity from partner yet.</p>
+            {% endfor %}
+            {% else %}
+            <p style="opacity: 0.6;">You don't have a partner linked yet.</p>
+            <button class="btn-premium" style="width: 100%;">Find Partner</button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

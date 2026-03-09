@@ -1,0 +1,14 @@
+{% extends 'accountability/base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 400px; margin: 4rem auto; text-align: center;">
+    <h1 class="gradient-text">Join DAPS</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-premium" style="width: 100%; margin-top: 1rem;">Register</button>
+    </form>
+    <p style="margin-top: 1.5rem; opacity: 0.6;">Already have an account? <a href="{% url 'login' %}"
+            style="color: var(--primary);">Login here</a></p>
+</div>
+{% endblock %}
