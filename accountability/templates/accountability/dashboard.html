@@ -18,8 +18,9 @@
                     style="padding: 0.8rem; background: rgba(239, 68, 68, 0.05); border-radius: 8px; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong style="color: #ef4444;">{{ goal.title }}</strong>
-                        <div style="font-size: 0.8rem; opacity: 0.8;">Penalty: {{ goal.penalty|default:"Standard
-                            Punishment" }}</div>
+                        <div style="font-size: 0.8rem; color: #ef4444; font-weight: bold; margin-top: 0.2rem;">
+                            ⚠️ Penalty: {{ goal.penalty|default:"Standard Punishment" }}
+                        </div>
                     </div>
                     <a href="{% url 'complete_goal' goal.id %}" class="btn-premium"
                         style="font-size: 0.7rem; padding: 0.4rem 0.8rem; background: #ef4444; border: none;">Done
@@ -39,8 +40,10 @@
                     <div>
                         <div style="font-weight: bold;">{{ goal.title }}</div>
                         {% if goal.penalty %}
-                        <div style="font-size: 0.75rem; color: #ef4444; font-weight: bold; margin-top: 0.2rem;">Penalty:
-                            {{ goal.penalty }}</div>
+                        <div
+                            style="font-size: 0.8rem; color: #ef4444; font-weight: bold; margin-top: 0.3rem; background: rgba(239, 68, 68, 0.1); padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">
+                            ⚠️ Penalty: {{ goal.penalty }}
+                        </div>
                         {% endif %}
                         {% if goal.partnership %}
                         <span style="font-size: 0.7rem; color: var(--secondary); text-transform: uppercase;">Shared
