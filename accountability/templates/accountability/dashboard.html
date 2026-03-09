@@ -67,7 +67,8 @@
             {% endfor %}
             {% else %}
             <p style="opacity: 0.6;">You don't have a partner linked yet.</p>
-            <button class="btn-premium" style="width: 100%;">Find Partner</button>
+            <a href="{% url 'find_partner' %}" class="btn-premium"
+                style="width: 100%; display: block; text-decoration: none; text-align: center;">Find Partner</a>
             {% endif %}
         </div>
     </div>

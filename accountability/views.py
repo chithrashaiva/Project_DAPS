@@ -61,3 +61,26 @@ def daily_update_view(request):
     else:
         form = DailyUpdateForm()
     return render(request, 'accountability/daily_update.html', {'form': form})
+
+@login_required
+def find_partner(request):
+    # Find users who are NOT the current user AND don't have an active partnership
+    # This is a simplified version: just show all other users for now
+    existing_partnerships = Partnership.objects.filter(Q(user1=request.user) | Q(user2=request.user))
+    if existing_partnerships.exists():
+        return redirect('dashboard')
+        
+    users = User.objects.exclude(id=request.user.id).exclude(
+        Q(partnerships_as_user1__is_active=True) | Q(partnerships_as_user2__is_active=True)
+    )
+    return render(request, 'accountability/find_partner.html', {'users': users})
+
+@login_required
+def connect_partner(request, user_id):
+    partner = User.objects.get(id=user_id)
+    # Check if a partnership already exists
+    if not Partnership.objects.filter(
+        Q(user1=request.user, user2=partner) | Q(user1=partner, user2=request.user)
+    ).exists():
+        Partnership.objects.create(user1=request.user, user2=partner)
+    return redirect('dashboard')
