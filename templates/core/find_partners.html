@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Find Partners{% endblock %}
+
+{% block content %}
+<div class="page-container" id="find-partners-page">
+    <div class="page-header">
+        <h1>🔍 Find Partners</h1>
+        <p class="page-subtitle">Search globally for your accountability partner</p>
+    </div>
+
+    <div class="search-card glass-card animate-fade-in" id="search-card">
+        <form method="post" class="search-form" id="partner-search-form">
+            {% csrf_token %}
+            <div class="search-row">
+                {{ form.query }}
+                <button type="submit" class="btn btn-primary" id="search-btn">🔍 Search</button>
+            </div>
+        </form>
+    </div>
+
+    {% if results %}
+    <div class="results-section" id="search-results">
+        <h2 class="section-title">Search Results</h2>
+        <div class="users-grid">
+            {% for user_result in results %}
+            <div class="user-card glass-card animate-fade-in" id="user-{{ user_result.id }}"
+                style="animation-delay: {{ forloop.counter0 }}50ms;">
+                <div class="user-card-avatar">{{ user_result.username|first|upper }}</div>
+                <div class="user-card-info">
+                    <span class="user-card-name">{{ user_result.username }}</span>
+                    <span class="user-card-email">{{ user_result.email }}</span>
+                </div>
+                <div class="user-card-actions">
+                    {% if user_result.id in sent_requests %}
+                    <span class="btn btn-disabled">Request Sent</span>
+                    {% elif user_result == request.user.profile.partner %}
+                    <span class="btn btn-success-outline">Current Partner ✓</span>
+                    {% else %}
+                    <a href="{% url 'send_partner_request' user_result.id %}" class="btn btn-primary"
+                        id="send-req-{{ user_result.id }}">
+                        Send Request
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}All Goals{% endblock %}
+
+{% block content %}
+<div class="page-container" id="goal-list-page">
+    <div class="page-header">
+        <h1>🎯 All Goals</h1>
+        <p class="page-subtitle">Track your complete accountability history</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar glass-card" id="goal-filters">
+        <a href="{% url 'goal_list' %}" class="filter-btn {% if not current_status %}active{% endif %}">All</a>
+        <a href="{% url 'goal_list' %}?status=pending"
+            class="filter-btn {% if current_status == 'pending' %}active{% endif %}">⏳ Pending</a>
+        <a href="{% url 'goal_list' %}?status=in_progress"
+            class="filter-btn {% if current_status == 'in_progress' %}active{% endif %}">🔄 In Progress</a>
+        <a href="{% url 'goal_list' %}?status=completed"
+            class="filter-btn {% if current_status == 'completed' %}active{% endif %}">✅ Completed</a>
+        <a href="{% url 'goal_list' %}?status=failed"
+            class="filter-btn {% if current_status == 'failed' %}active{% endif %}">❌ Failed</a>
+    </div>
+
+    <!-- Goals Grid -->
+    <div class="goals-grid" id="goals-grid">
+        {% for goal in goals %}
+        <a href="{% url 'goal_detail' goal.id %}" class="goal-card glass-card animate-fade-in"
+            id="goal-card-{{ goal.id }}" style="animation-delay: {{ forloop.counter0 }}50ms;">
+            <div class="goal-card-header">
+                <span class="status-badge status-{{ goal.status }}">{{ goal.get_status_display }}</span>
+                <span class="goal-phase-tag">{{ goal.get_phase_display }}</span>
+            </div>
+            <h3 class="goal-card-title">{{ goal.title }}</h3>
+            {% if goal.description %}
+            <p class="goal-card-desc">{{ goal.description|truncatewords:15 }}</p>
+            {% endif %}
+            <div class="goal-card-footer">
+                <span class="goal-date">📅 {{ goal.date|date:"M j" }}</span>
+                <span class="goal-penalty-tag">${{ goal.penalty_amount }}</span>
+            </div>
+        </a>
+        {% empty %}
+        <div class="empty-state-full glass-card">
+            <span class="empty-icon">🎯</span>
+            <h3>No goals found</h3>
+            <p>Start your accountability journey by creating your first goal!</p>
+            <a href="{% url 'create_goal' %}" class="btn btn-primary">Create Goal</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}{{ goal.title }}{% endblock %}
+
+{% block content %}
+<div class="page-container" id="goal-detail-page">
+    <div class="page-header">
+        <h1>🎯 {{ goal.title }}</h1>
+        <p class="page-subtitle">Created {{ goal.created_at|date:"M j, Y g:i A" }}</p>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Goal Details -->
+        <div class="glass-card animate-fade-in" id="goal-info-card">
+            <div class="card-header">
+                <h2>Goal Details</h2>
+                <span class="status-badge status-{{ goal.status }}">{{ goal.get_status_display }}</span>
+            </div>
+
+            {% if goal.description %}
+            <p class="goal-description">{{ goal.description }}</p>
+            {% endif %}
+
+            <div class="goal-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Phase</span>
+                    <span class="meta-value">{{ goal.get_phase_display }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Deadline</span>
+                    <span class="meta-value">{{ goal.deadline|date:"M j, Y g:i A" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Penalty</span>
+                    <span class="meta-value">${{ goal.penalty_amount }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Potential Reward</span>
+                    <span class="meta-value positive">${{ goal.penalty_amount|add:goal.penalty_amount }}</span>
+                </div>
+            </div>
+
+            {% if goal.status == 'pending' or goal.status == 'in_progress' %}
+            <div class="goal-actions">
+                {% if goal.status == 'pending' %}
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="in_progress">
+                    <button type="submit" class="btn btn-accent" id="start-goal-btn">🔄 Start Working</button>
+                </form>
+                {% endif %}
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="complete">
+                    <button type="submit" class="btn btn-success" id="complete-goal-btn">✅ Mark Complete</button>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- Transactions -->
+            {% if transactions %}
+            <div class="section-divider"></div>
+            <h3>💳 Transactions</h3>
+            <div class="transactions-list">
+                {% for txn in transactions %}
+                <div class="transaction-item transaction-{{ txn.type }}">
+                    <span class="txn-icon">{% if txn.type == 'reward' %}🟢{% else %}🔴{% endif %}</span>
+                    <span>{{ txn.get_type_display }}</span>
+                    <span class="txn-amount {% if txn.type == 'reward' %}positive{% else %}negative{% endif %}">
+                        {% if txn.type == 'reward' %}+{% else %}-{% endif %}${{ txn.amount }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Progress Logs -->
+        <div class="glass-card animate-fade-in" id="progress-card" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <h2>📝 Progress Notes</h2>
+            </div>
+
+            {% if goal.status != 'completed' and goal.status != 'failed' %}
+            <form method="post" class="form" id="progress-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_note">
+                {% for field in note_form %}
+                <div class="form-group">
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary btn-full" id="add-note-btn">Add Note</button>
+            </form>
+            <div class="section-divider"></div>
+            {% endif %}
+
+            <div class="progress-timeline">
+                {% for log in progress_logs %}
+                <div class="timeline-item animate-fade-in" style="animation-delay: {{ forloop.counter0 }}00ms;">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <p>{{ log.note }}</p>
+                        <span class="timeline-time">{{ log.timestamp|date:"g:i A" }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-state">No progress notes yet. Add your first update!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <a href="{% url 'dashboard' %}" class="btn btn-outline back-link" id="back-to-dashboard">← Back to Dashboard</a>
+</div>
+{% endblock %}

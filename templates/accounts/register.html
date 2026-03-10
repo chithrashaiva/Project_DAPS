@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="auth-container" id="register-container">
+    <div class="auth-card glass-card animate-fade-in">
+        <div class="auth-header">
+            <span class="auth-icon">⚡</span>
+            <h1>Join DAPS</h1>
+            <p class="auth-subtitle">Start your accountability journey today</p>
+        </div>
+        <form method="post" class="auth-form" id="register-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="form-error">
+                    {% for error in field.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-full" id="register-submit">
+                Create Account 🚀
+            </button>
+        </form>
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{% url 'login' %}" class="link" id="login-link">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

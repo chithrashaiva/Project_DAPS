@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Daily Accountability Partner System - Commit, Review, and Achieve your goals with a partner.">
+    <title>{% block title %}DAPS{% endblock %} | Daily Accountability Partner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav class="nav" id="main-nav">
+        <div class="nav-container">
+            <a href="{% url 'dashboard' %}" class="nav-logo" id="nav-logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">DAPS</span>
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="{% url 'goal_list' %}" class="nav-link {% if request.resolver_match.url_name == 'goal_list' %}active{% endif %}" id="nav-goals">
+                    <span class="nav-icon">🎯</span> Goals
+                </a>
+                <a href="{% url 'find_partners' %}" class="nav-link {% if request.resolver_match.url_name == 'find_partners' %}active{% endif %}" id="nav-partners">
+                    <span class="nav-icon">🤝</span> Partners
+                </a>
+                <a href="{% url 'partner_requests' %}" class="nav-link {% if request.resolver_match.url_name == 'partner_requests' %}active{% endif %}" id="nav-requests">
+                    <span class="nav-icon">📬</span> Requests
+                    {% if pending_request_count %}<span class="badge">{{ pending_request_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'partner_progress' %}" class="nav-link {% if request.resolver_match.url_name == 'partner_progress' %}active{% endif %}" id="nav-partner-progress">
+                    <span class="nav-icon">👁️</span> Partner View
+                </a>
+            </div>
+            <div class="nav-user" id="nav-user">
+                <a href="{% url 'profile' %}" class="nav-link user-link" id="nav-profile">
+                    <span class="user-avatar">{{ user.username|first|upper }}</span>
+                    <span class="user-name">{{ user.username }}</span>
+                </a>
+                <a href="{% url 'logout' %}" class="nav-link logout-link" id="nav-logout">Logout</a>
+            </div>
+            <button class="nav-toggle" id="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('show'); document.querySelector('.nav-user').classList.toggle('show');">
+                ☰
+            </button>
+        </div>
+    </nav>
+    {% endif %}
+
+    {% if messages %}
+    <div class="messages-container" id="messages-container">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}" id="message-{{ forloop.counter }}">
+            <span>{{ message }}</span>
+            <button class="message-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer" id="footer">
+        <p>⚡ DAPS — Daily Accountability Partner System &copy; 2026</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

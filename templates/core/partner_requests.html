@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Partner Requests{% endblock %}
+
+{% block content %}
+<div class="page-container" id="partner-requests-page">
+    <div class="page-header">
+        <h1>📬 Partner Requests</h1>
+        <p class="page-subtitle">Manage your partnership invitations</p>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Incoming Requests -->
+        <div class="glass-card animate-fade-in" id="incoming-requests">
+            <div class="card-header">
+                <h2>📥 Incoming Requests</h2>
+                <span class="count-badge">{{ incoming.count }}</span>
+            </div>
+            <div class="requests-list">
+                {% for req in incoming %}
+                <div class="request-item" id="req-{{ req.id }}">
+                    <div class="request-user">
+                        <span class="request-avatar">{{ req.from_user.username|first|upper }}</span>
+                        <div class="request-info">
+                            <span class="request-name">{{ req.from_user.username }}</span>
+                            <span class="request-email">{{ req.from_user.email }}</span>
+                            <span class="request-time">{{ req.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    <div class="request-actions">
+                        <a href="{% url 'handle_partner_request' req.id 'accept' %}" class="btn btn-success btn-sm"
+                            id="accept-{{ req.id }}">✓ Accept</a>
+                        <a href="{% url 'handle_partner_request' req.id 'reject' %}" class="btn btn-danger btn-sm"
+                            id="reject-{{ req.id }}">✗ Reject</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="empty-state">No incoming requests</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Outgoing Requests -->
+        <div class="glass-card animate-fade-in" id="outgoing-requests" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <h2>📤 Sent Requests</h2>
+                <span class="count-badge">{{ outgoing.count }}</span>
+            </div>
+            <div class="requests-list">
+                {% for req in outgoing %}
+                <div class="request-item" id="out-{{ req.id }}">
+                    <div class="request-user">
+                        <span class="request-avatar">{{ req.to_user.username|first|upper }}</span>
+                        <div class="request-info">
+                            <span class="request-name">{{ req.to_user.username }}</span>
+                            <span class="request-email">{{ req.to_user.email }}</span>
+                            <span class="request-time">{{ req.created_at|timesince }} ago</span>
+                        </div>
+                    </div>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+                {% empty %}
+                <p class="empty-state">No outgoing requests</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <a href="{% url 'find_partners' %}" class="btn btn-primary back-link" id="find-more-btn">🔍 Find More Partners</a>
+</div>
+{% endblock %}

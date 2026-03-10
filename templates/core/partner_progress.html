@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Partner Progress{% endblock %}
+
+{% block content %}
+<div class="page-container" id="partner-progress-page">
+    <div class="page-header">
+        <h1>👁️ Partner Progress</h1>
+        <p class="page-subtitle">Monitor your partner's accountability journey</p>
+    </div>
+
+    {% if partner %}
+    <!-- Partner Profile -->
+    <div class="partner-profile-card glass-card animate-fade-in" id="partner-profile">
+        <div class="partner-profile-header">
+            <div class="partner-avatar-large">{{ partner.username|first|upper }}</div>
+            <div class="partner-profile-info">
+                <h2>{{ partner.username }}</h2>
+                <p>{{ partner.email }}</p>
+            </div>
+        </div>
+        <div class="stats-row partner-stats">
+            <div class="stat-card mini" id="partner-stat-total">
+                <span class="stat-value">{{ total_goals }}</span>
+                <span class="stat-label">Total Goals</span>
+            </div>
+            <div class="stat-card mini" id="partner-stat-completed">
+                <span class="stat-value">{{ completed_goals }}</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-card mini" id="partner-stat-rate">
+                <span class="stat-value">{{ completion_rate }}%</span>
+                <span class="stat-label">Success Rate</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Goals -->
+    <div class="glass-card animate-slide-up" id="partner-today-goals" style="animation-delay: 0.1s;">
+        <div class="card-header">
+            <h2>📅 Today's Goals</h2>
+        </div>
+        <div class="goals-list">
+            {% for goal in partner_goals_today %}
+            <div class="goal-item goal-{{ goal.status }}">
+                <div class="goal-info">
+                    <span class="goal-status-icon">
+                        {% if goal.status == 'completed' %}✅{% elif goal.status == 'failed' %}❌{% elif goal.status ==
+                        'in_progress' %}🔄{% else %}⏳{% endif %}
+                    </span>
+                    <span class="goal-title">{{ goal.title }}</span>
+                </div>
+                <div class="goal-meta">
+                    <span class="status-badge status-{{ goal.status }}">{{ goal.get_status_display }}</span>
+                    <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p class="empty-state">Your partner hasn't committed any goals today yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent History -->
+    <div class="glass-card animate-slide-up" id="partner-history" style="animation-delay: 0.2s;">
+        <div class="card-header">
+            <h2>📋 Recent History</h2>
+        </div>
+        <div class="goals-grid compact">
+            {% for goal in partner_goals_all %}
+            <div class="goal-card-mini glass-card-inner" id="partner-goal-{{ goal.id }}">
+                <div class="goal-card-header">
+                    <span class="status-badge status-{{ goal.status }}">{{ goal.get_status_display }}</span>
+                </div>
+                <h4>{{ goal.title }}</h4>
+                <span class="goal-date">{{ goal.date|date:"M j" }}</span>
+            </div>
+            {% empty %}
+            <p class="empty-state">No goal history yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

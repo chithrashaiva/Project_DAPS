@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-container" id="dashboard-page">
+    <div class="page-header">
+        <h1>📊 Dashboard</h1>
+        <p class="page-subtitle">{{ today|date:"l, F j, Y" }} — Your Daily Accountability Hub</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="stats-row">
+        <div class="stat-card glass-card animate-fade-in" id="stat-completed">
+            <span class="stat-icon">✅</span>
+            <span class="stat-value">{{ completed_goals }}</span>
+            <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat-card glass-card animate-fade-in" id="stat-failed" style="animation-delay: 0.05s;">
+            <span class="stat-icon">❌</span>
+            <span class="stat-value">{{ failed_goals }}</span>
+            <span class="stat-label">Failed</span>
+        </div>
+        <div class="stat-card glass-card animate-fade-in" id="stat-rate" style="animation-delay: 0.1s;">
+            <span class="stat-icon">📈</span>
+            <span class="stat-value">{{ completion_rate }}%</span>
+            <span class="stat-label">Success Rate</span>
+        </div>
+        <div class="stat-card glass-card animate-fade-in" id="stat-wallet" style="animation-delay: 0.15s;">
+            <span class="stat-icon">💰</span>
+            <span class="stat-value {% if wallet_balance >= 0 %}positive{% else %}negative{% endif %}">&#36;{{ wallet_balance }}</span>
+            <span class="stat-label">Wallet</span>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar" id="action-bar">
+        <a href="{% url 'create_goal' %}" class="btn btn-primary" id="create-goal-btn">
+            ➕ Commit New Goal
+        </a>
+        {% if pending_requests > 0 %}
+        <a href="{% url 'partner_requests' %}" class="btn btn-accent" id="pending-requests-btn">
+            📬 {{ pending_requests }} Pending Request{{ pending_requests|pluralize }}
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Low-Friction Protocol Phases -->
+    <div class="phases-section" id="phases-section">
+        <h2 class="section-title">⚡ Today's Execution Cycle</h2>
+
+        <!-- Morning Commitment -->
+        <div class="phase-block glass-card animate-slide-up" id="phase-morning">
+            <div class="phase-header">
+                <span class="phase-icon">🌅</span>
+                <h3>Morning Commitment</h3>
+                <span class="phase-badge">{{ morning_goals.count }} goal{{ morning_goals.count|pluralize }}</span>
+            </div>
+            <div class="goals-list">
+                {% for goal in morning_goals %}
+                <a href="{% url 'goal_detail' goal.id %}" class="goal-item goal-{{ goal.status }}"
+                    id="goal-{{ goal.id }}">
+                    <div class="goal-info">
+                        <span class="goal-status-icon">
+                            {% if goal.status == 'completed' %}✅{% elif goal.status == 'failed' %}❌{% elif goal.status
+                            == 'in_progress' %}🔄{% else %}⏳{% endif %}
+                        </span>
+                        <span class="goal-title">{{ goal.title }}</span>
+                    </div>
+                    <div class="goal-meta">
+                        <span class="goal-penalty">&#36;{{ goal.penalty_amount }}</span>
+                        <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="empty-state">No morning goals yet. <a href="{% url 'create_goal' %}">Commit one now!</a></p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Mid-Day Support -->
+        <div class="phase-block glass-card animate-slide-up" id="phase-midday" style="animation-delay: 0.1s;">
+            <div class="phase-header">
+                <span class="phase-icon">☀️</span>
+                <h3>Mid-Day Support</h3>
+                <span class="phase-badge">{{ midday_goals.count }} goal{{ midday_goals.count|pluralize }}</span>
+            </div>
+            <div class="goals-list">
+                {% for goal in midday_goals %}
+                <a href="{% url 'goal_detail' goal.id %}" class="goal-item goal-{{ goal.status }}"
+                    id="goal-{{ goal.id }}">
+                    <div class="goal-info">
+                        <span class="goal-status-icon">
+                            {% if goal.status == 'completed' %}✅{% elif goal.status == 'failed' %}❌{% elif goal.status
+                            == 'in_progress' %}🔄{% else %}⏳{% endif %}
+                        </span>
+                        <span class="goal-title">{{ goal.title }}</span>
+                    </div>
+                    <div class="goal-meta">
+                        <span class="goal-penalty">&#36;{{ goal.penalty_amount }}</span>
+                        <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="empty-state">No mid-day goals. <a href="{% url 'create_goal' %}">Add one!</a></p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Evening Review -->
+        <div class="phase-block glass-card animate-slide-up" id="phase-evening" style="animation-delay: 0.2s;">
+            <div class="phase-header">
+                <span class="phase-icon">🌙</span>
+                <h3>Evening Review</h3>
+                <span class="phase-badge">{{ evening_goals.count }} goal{{ evening_goals.count|pluralize }}</span>
+            </div>
+            <div class="goals-list">
+                {% for goal in evening_goals %}
+                <a href="{% url 'goal_detail' goal.id %}" class="goal-item goal-{{ goal.status }}"
+                    id="goal-{{ goal.id }}">
+                    <div class="goal-info">
+                        <span class="goal-status-icon">
+                            {% if goal.status == 'completed' %}✅{% elif goal.status == 'failed' %}❌{% elif goal.status
+                            == 'in_progress' %}🔄{% else %}⏳{% endif %}
+                        </span>
+                        <span class="goal-title">{{ goal.title }}</span>
+                    </div>
+                    <div class="goal-meta">
+                        <span class="goal-penalty">&#36;{{ goal.penalty_amount }}</span>
+                        <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="empty-state">No evening goals. <a href="{% url 'create_goal' %}">Plan one!</a></p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Partner Quick View & Transactions -->
+    <div class="grid grid-2" id="dashboard-bottom">
+        <!-- Partner Quick View -->
+        <div class="glass-card animate-fade-in" id="partner-quick-view" style="animation-delay: 0.3s;">
+            <div class="card-header">
+                <h2>🤝 Partner</h2>
+            </div>
+            {% if partner %}
+            <div class="partner-card">
+                <div class="partner-avatar">{{ partner.username|first|upper }}</div>
+                <div class="partner-info">
+                    <span class="partner-name">{{ partner.username }}</span>
+                    <span class="partner-email">{{ partner.email }}</span>
+                </div>
+            </div>
+            {% if partner_goals_today %}
+            <div class="partner-goals-preview">
+                <h4>Their Today</h4>
+                {% for goal in partner_goals_today %}
+                <div class="mini-goal-item">
+                    <span>{% if goal.status == 'completed' %}✅{% elif goal.status == 'failed' %}❌{% elif goal.status ==
+                        'in_progress' %}🔄{% else %}⏳{% endif %}</span>
+                    <span>{{ goal.title }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <a href="{% url 'partner_progress' %}" class="btn btn-outline btn-full">View Full Progress →</a>
+            {% else %}
+            <div class="empty-state-centered">
+                <span class="empty-icon">🔍</span>
+                <p>No partner yet</p>
+                <a href="{% url 'find_partners' %}" class="btn btn-primary">Find a Partner</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="glass-card animate-fade-in" id="recent-transactions" style="animation-delay: 0.35s;">
+            <div class="card-header">
+                <h2>💳 Recent Transactions</h2>
+            </div>
+            <div class="transactions-list">
+                {% for txn in recent_transactions %}
+                <div class="transaction-item transaction-{{ txn.type }}" id="txn-{{ txn.id }}">
+                    <div class="txn-info">
+                        <span class="txn-icon">{% if txn.type == 'reward' %}🟢{% else %}🔴{% endif %}</span>
+                        <span class="txn-goal">{{ txn.goal.title }}</span>
+                    </div>
+                    <span class="txn-amount {% if txn.type == 'reward' %}positive{% else %}negative{% endif %}">
+                        {% if txn.type == 'reward' %}+{% else %}-{% endif %}&#36;{{ txn.amount }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="empty-state">No transactions yet. Complete goals to earn rewards!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
