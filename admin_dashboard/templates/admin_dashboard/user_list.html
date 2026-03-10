@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="page-container" id="admin-user-list">
+    <div class="page-header">
+        <h1>👥 User Management</h1>
+        <p class="page-subtitle">Monitor and manage all system participants</p>
+    </div>
+
+    <!-- Search -->
+    <div class="search-card glass-card animate-fade-in" style="margin-bottom: 2rem;">
+        <form method="get" class="search-form">
+            <div class="search-row">
+                <input type="text" name="q" class="form-input" placeholder="Search by username or email..."
+                    value="{{ query|default:'' }}">
+                <button type="submit" class="btn btn-primary">🔍 Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="glass-card">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                        <th style="padding: 1rem;">User</th>
+                        <th style="padding: 1rem;">Email</th>
+                        <th style="padding: 1rem;">Role</th>
+                        <th style="padding: 1rem;">Goals</th>
+                        <th style="padding: 1rem;">Wallet</th>
+                        <th style="padding: 1rem; text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_item in users %}
+                    <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;"
+                        onmouseover="this.style.background='var(--bg-glass-hover)'"
+                        onmouseout="this.style.background='transparent'">
+                        <td style="padding: 1rem; font-weight: 600;">{{ user_item.username }}</td>
+                        <td style="padding: 1rem; color: var(--text-secondary);">{{ user_item.email }}</td>
+                        <td style="padding: 1rem;">
+                            <span class="goal-phase-tag"
+                                style="{% if user_item.profile.role == 'admin' %}background: var(--accent-gradient); color: white;{% endif %}">
+                                {{ user_item.profile.get_role_display }}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem;">{{ user_item.goal_count }}</td>
+                        <td style="padding: 1rem; font-weight: 700; color: var(--success);">${{
+                            user_item.profile.wallet_balance }}</td>
+                        <td style="padding: 1rem; text-align: right;">
+                            <a href="{% url 'admin_user_detail' user_item.id %}" class="btn btn-sm btn-outline">View
+                                Details</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">No users
+                            found matching your criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

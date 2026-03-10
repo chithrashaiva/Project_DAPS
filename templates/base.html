@@ -50,6 +50,13 @@
                     id="nav-partner-progress">
                     <span class="nav-icon">👁️</span> Partner View
                 </a>
+                {% if user.profile.role == 'admin' %}
+                <a href="{% url 'admin_panel' %}"
+                    class="nav-link {% if 'admin-dashboard' in request.path %}active{% endif %}" id="nav-admin-panel"
+                    style="border: 1px solid var(--accent-primary-hover);">
+                    <span class="nav-icon">🏢</span> Company Panel
+                </a>
+                {% endif %}
             </div>
             <div class="nav-user" id="nav-user">
                 <a href="{% url 'profile' %}" class="nav-link user-link" id="nav-profile">

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}User Details: {{ managed_user.username }}{% endblock %}
+
+{% block content %}
+<div class="page-container" id="admin-user-detail">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <a href="{% url 'admin_user_list' %}" class="link" style="font-size: 0.8rem;">← Back to User List</a>
+            <h1 style="margin-top: 0.5rem;">👤 {{ managed_user.username }}</h1>
+            <p class="page-subtitle">{{ managed_user.email }}</p>
+        </div>
+        <div class="stat-card glass-card mini">
+            <span class="stat-label">Wallet Balance</span>
+            <span class="stat-value" style="color: var(--success); font-size: 1.2rem;">${{ profile.wallet_balance
+                }}</span>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Goal History -->
+        <div class="section glass-card">
+            <h2 class="section-title">🎯 Goal History</h2>
+            <div class="goals-list">
+                {% for goal in goals %}
+                <div
+                    class="goal-item {% if goal.status == 'completed' %}goal-completed{% elif goal.status == 'failed' %}goal-failed{% endif %}">
+                    <div class="goal-info">
+                        <span class="goal-status-icon">
+                            {% if goal.status == 'completed' %}✅
+                            {% elif goal.status == 'failed' %}❌
+                            {% elif goal.status == 'in_progress' %}🔄
+                            {% else %}⏳{% endif %}
+                        </span>
+                        <div>
+                            <span class="goal-title">{{ goal.title }}</span>
+                            <div class="goal-meta" style="margin-top: 0.2rem;">{{ goal.date|date:"M d" }} • {{
+                                goal.get_phase_display }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center">No goals recorded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Financial Transactions -->
+        <div class="section glass-card">
+            <h2 class="section-title">💸 Transaction History</h2>
+            <div class="goals-list">
+                {% for tx in transactions %}
+                <div class="goal-item">
+                    <div class="goal-info">
+                        <span class="goal-status-icon">
+                            {% if tx.type == 'reward' %}💰{% else %}⚖️{% endif %}
+                        </span>
+                        <div>
+                            <span class="goal-title">{{ tx.get_type_display|capfirst }}</span>
+                            <div class="goal-meta">{{ tx.goal.title|truncatechars:30 }}</div>
+                        </div>
+                    </div>
+                    <span class="goal-value"
+                        style="font-weight: 700; color: {% if tx.type == 'reward' %}var(--success){% else %}var(--danger){% endif %};">
+                        {% if tx.type == 'reward' %}+{% else %}-{% endif %}${{ tx.amount }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-center">No financial activity recorded.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

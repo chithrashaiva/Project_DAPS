@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load admin_filters %}
+{% block title %}Company Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-container" id="admin-dashboard">
+    <div class="page-header">
+        <h1>🏢 Company Dashboard</h1>
+        <p class="page-subtitle">Global overview of the DAPS system performance</p>
+    </div>
+
+    <!-- Global Stats -->
+    <div class="stats-row">
+        <div class="stat-card glass-card">
+            <span class="stat-icon">👥</span>
+            <span class="stat-value">{{ total_users }}</span>
+            <span class="stat-label">Total Users</span>
+        </div>
+        <div class="stat-card glass-card">
+            <span class="stat-icon">🎯</span>
+            <span class="stat-value">{{ total_goals }}</span>
+            <span class="stat-label">Total Goals</span>
+        </div>
+        <div class="stat-card glass-card">
+            <span class="stat-icon">📈</span>
+            <span class="stat-value">{{ success_rate }}%</span>
+            <span class="stat-label">System-wide Success</span>
+        </div>
+        <div class="stat-card glass-card">
+            <span class="stat-icon">💰</span>
+            <span class="stat-value">${{ total_rewards|floatformat:2 }}</span>
+            <span class="stat-label">Total Rewards Paid</span>
+        </div>
+    </div>
+
+    <div class="grid grid-2">
+        <!-- Budget Breakdown -->
+        <div class="section glass-card">
+            <h2 class="section-title">📊 Financial Statistics</h2>
+            <div class="glass-card-inner" style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Total Penalties Collected:</span>
+                    <span style="color: var(--danger); font-weight: 700;">${{ total_penalties|floatformat:2 }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Total Rewards Distributed:</span>
+                    <span style="color: var(--success); font-weight: 700;">${{ total_rewards|floatformat:2 }}</span>
+                </div>
+            </div>
+            <p class="page-subtitle" style="font-size: 0.8rem;">
+                DAPS operates on a 2x reward structure. Net system flow:
+                <span
+                    style="color: {% if total_penalties > total_rewards %}var(--success){% else %}var(--danger){% endif %}; font-weight: 700;">
+                    ${{ total_penalties|subtract:total_rewards|abs_value|floatformat:2 }}
+                </span>
+            </p>
+        </div>
+
+        <!-- Recent New Users -->
+        <div class="section glass-card">
+            <h2 class="section-title">🆕 New Registrations</h2>
+            <div class="goals-list">
+                {% for recent_user in recent_users %}
+                <div class="goal-item">
+                    <div class="goal-info">
+                        <div class="user-avatar" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                            {{ recent_user.username|first|upper }}
+                        </div>
+                        <span class="goal-title">{{ recent_user.username }}</span>
+                    </div>
+                    <span class="goal-meta">{{ recent_user.date_joined|date:"M d, Y" }}</span>
+                </div>
+                {% empty %}
+                <p class="text-center">No recent registrations.</p>
+                {% endfor %}
+            </div>
+            <a href="{% url 'admin_user_list' %}" class="btn btn-outline btn-full" style="margin-top: 1rem;">Manage All
+                Users</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

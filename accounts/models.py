@@ -6,7 +6,13 @@ from decimal import Decimal
 
 
 class UserProfile(models.Model):
+    ROLE_CHOICES = [
+        ('user', 'User'),
+        ('admin', 'Admin/Company'),
+    ]
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     bio = models.TextField(max_length=500, blank=True, default='')
     wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     partner = models.ForeignKey(
