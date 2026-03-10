@@ -46,6 +46,15 @@
             {% endfor %}
         </div>
     </div>
+    {% elif searched %}
+    <div class="no-results-section animate-fade-in" id="no-results">
+        <div class="glass-card text-center" style="padding: 3rem;">
+            <span style="font-size: 3rem;">🔍</span>
+            <h2 style="margin-top: 1rem;">User does not exist</h2>
+            <p class="page-subtitle">We couldn't find any users matching your query. Try a different username or email.
+            </p>
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

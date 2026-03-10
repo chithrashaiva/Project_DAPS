@@ -14,7 +14,16 @@
             {% for field in form %}
             <div class="form-group">
                 <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {% if field.name == 'password' %}
+                <div class="password-wrapper">
+                    {{ field }}
+                    <button type="button" class="toggle-password" data-toggle="{{ field.id_for_label }}">
+                        <span class="toggle-icon">👁️</span>
+                    </button>
+                </div>
+                {% else %}
                 {{ field }}
+                {% endif %}
                 {% if field.errors %}
                 <div class="form-error">
                     {% for error in field.errors %}

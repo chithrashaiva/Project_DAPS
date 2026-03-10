@@ -154,9 +154,11 @@ def find_partners(request):
     results = []
     form = PartnerSearchForm()
 
+    searched = False
     if request.method == 'POST':
         form = PartnerSearchForm(request.POST)
         if form.is_valid():
+            searched = True
             query = form.cleaned_data['query']
             results = User.objects.filter(
                 Q(username__icontains=query) | Q(email__icontains=query)
@@ -171,6 +173,7 @@ def find_partners(request):
         'form': form,
         'results': results,
         'sent_requests': list(sent_requests),
+        'searched': searched,
     })
 
 
