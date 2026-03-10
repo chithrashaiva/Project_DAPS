@@ -1,1 +1,1 @@
-web: gunicorn daps.wsgi:application
+web: python -m gunicorn daps.wsgi:application
