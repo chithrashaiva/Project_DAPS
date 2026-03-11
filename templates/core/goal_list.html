@@ -34,19 +34,17 @@
             {% if goal.description %}
             <p class="goal-card-desc">{{ goal.description|truncatewords:15 }}</p>
             {% endif %}
-            <div class="goal-card-footer">
-                <span class="goal-date">📅 {{ goal.date|date:"M j" }}</span>
-                <span class="goal-penalty-tag">${{ goal.penalty_amount }}</span>
-            </div>
-        </a>
-        {% empty %}
-        <div class="empty-state-full glass-card">
-            <span class="empty-icon">🎯</span>
-            <h3>No goals found</h3>
-            <p>Start your accountability journey by creating your first goal!</p>
-            <a href="{% url 'create_goal' %}" class="btn btn-primary">Create Goal</a>
-        </div>
-        {% endfor %}
+            <span class="goal-penalty-tag">₹{{ goal.penalty_amount }}</span>
     </div>
+    </a>
+    {% empty %}
+    <div class="empty-state-full glass-card">
+        <span class="empty-icon">🎯</span>
+        <h3>No goals found</h3>
+        <p>Start your accountability journey by creating your first goal!</p>
+        <a href="{% url 'create_goal' %}" class="btn btn-primary">Create Goal</a>
+    </div>
+    {% endfor %}
+</div>
 </div>
 {% endblock %}

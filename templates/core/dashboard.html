@@ -27,8 +27,9 @@
         </div>
         <div class="stat-card glass-card animate-fade-in" id="stat-wallet" style="animation-delay: 0.15s;">
             <span class="stat-icon">💰</span>
-            <span class="stat-value {% if wallet_balance >= 0 %}positive{% else %}negative{% endif %}">&#36;{{ wallet_balance }}</span>
-            <span class="stat-label">Wallet</span>
+            <span
+                class="stat-value wallet-premium {% if wallet_balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}">₹{{ wallet_balance|floatformat:2 }}</span>
+            <span class="stat-label">Wallet Balance</span>
         </div>
     </div>
 
@@ -67,7 +68,7 @@
                         <span class="goal-title">{{ goal.title }}</span>
                     </div>
                     <div class="goal-meta">
-                        <span class="goal-penalty">&#36;{{ goal.penalty_amount }}</span>
+                        <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
                         <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
                     </div>
                 </a>
@@ -96,7 +97,7 @@
                         <span class="goal-title">{{ goal.title }}</span>
                     </div>
                     <div class="goal-meta">
-                        <span class="goal-penalty">&#36;{{ goal.penalty_amount }}</span>
+                        <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
                         <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
                     </div>
                 </a>
@@ -125,7 +126,7 @@
                         <span class="goal-title">{{ goal.title }}</span>
                     </div>
                     <div class="goal-meta">
-                        <span class="goal-penalty">&#36;{{ goal.penalty_amount }}</span>
+                        <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
                         <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
                     </div>
                 </a>
@@ -186,7 +187,7 @@
                         <span class="txn-goal">{{ txn.goal.title }}</span>
                     </div>
                     <span class="txn-amount {% if txn.type == 'reward' %}positive{% else %}negative{% endif %}">
-                        {% if txn.type == 'reward' %}+{% else %}-{% endif %}&#36;{{ txn.amount }}
+                        {% if txn.type == 'reward' %}+{% else %}-{% endif %}₹{{ txn.amount }}
                     </span>
                 </div>
                 {% empty %}

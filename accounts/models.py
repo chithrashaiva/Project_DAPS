@@ -34,3 +34,23 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+
+class SystemWallet(models.Model):
+    """A singleton model to track the system-wide 'Admin Bank' balance."""
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"System Wallet: ${self.balance}"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists
+        if not self.pk and SystemWallet.objects.exists():
+            return
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def get_wallet(cls):
+        wallet, created = cls.objects.get_or_create(pk=1)
+        return wallet

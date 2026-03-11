@@ -5,12 +5,24 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Sum
 from decimal import Decimal
+from accounts.models import UserProfile, SystemWallet
 
 from .models import PartnerRequest, DailyGoal, ProgressLog, PenaltyReward
 from .forms import GoalForm, ProgressLogForm, PartnerSearchForm
+from functools import wraps
+
+def user_only(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if hasattr(request.user, 'profile') and request.user.profile.role == 'admin':
+            messages.error(request, 'Company personnel cannot participate in goals or partnerships.')
+            return redirect('admin_panel')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 
 @login_required
+@user_only
 def dashboard(request):
     """Main dashboard — the hub of the Low-Friction Protocol."""
     today = timezone.now().date()
@@ -36,6 +48,9 @@ def dashboard(request):
     )
     for goal in overdue_goals:
         _apply_penalty(request.user, goal)
+    
+    if overdue_goals.exists():
+        profile.refresh_from_db()
 
     # Recent transactions
     recent_transactions = PenaltyReward.objects.filter(user=request.user)[:5]
@@ -68,6 +83,7 @@ def dashboard(request):
 
 
 @login_required
+@user_only
 def create_goal(request):
     """Morning Commitment — create a daily goal."""
     if request.method == 'POST':
@@ -86,6 +102,7 @@ def create_goal(request):
 
 
 @login_required
+@user_only
 def update_goal(request, goal_id):
     """Update goal status or add progress notes."""
     goal = get_object_or_404(DailyGoal, id=goal_id, user=request.user)
@@ -129,6 +146,7 @@ def update_goal(request, goal_id):
 
 
 @login_required
+@user_only
 def goal_list(request):
     """View all goals with filtering."""
     goals = DailyGoal.objects.filter(user=request.user)
@@ -149,6 +167,7 @@ def goal_list(request):
 
 
 @login_required
+@user_only
 def find_partners(request):
     """Search for accountability partners globally."""
     results = []
@@ -178,6 +197,7 @@ def find_partners(request):
 
 
 @login_required
+@user_only
 def send_partner_request(request, user_id):
     """Send a partner request to another user."""
     to_user = get_object_or_404(User, id=user_id)
@@ -201,6 +221,7 @@ def send_partner_request(request, user_id):
 
 
 @login_required
+@user_only
 def partner_requests(request):
     """View and manage partner requests."""
     incoming = PartnerRequest.objects.filter(to_user=request.user, status='pending')
@@ -213,6 +234,7 @@ def partner_requests(request):
 
 
 @login_required
+@user_only
 def handle_partner_request(request, request_id, action):
     """Accept or reject a partner request."""
     partner_req = get_object_or_404(PartnerRequest, id=request_id, to_user=request.user, status='pending')
@@ -251,6 +273,7 @@ def handle_partner_request(request, request_id, action):
 
 
 @login_required
+@user_only
 def partner_progress(request):
     """View your partner's goals and progress."""
     profile = request.user.profile
@@ -292,6 +315,11 @@ def _apply_penalty(user, goal):
     profile.wallet_balance -= penalty_amount
     profile.save()
 
+    # Update Admin Bank
+    system_bank = SystemWallet.get_wallet()
+    system_bank.balance += penalty_amount
+    system_bank.save()
+
     PenaltyReward.objects.create(
         user=user,
         goal=goal,
@@ -309,6 +337,11 @@ def _apply_reward(user, goal):
     profile = user.profile
     profile.wallet_balance += reward_amount
     profile.save()
+
+    # Update Admin Bank (Payout)
+    system_bank = SystemWallet.get_wallet()
+    system_bank.balance -= reward_amount
+    system_bank.save()
 
     PenaltyReward.objects.create(
         user=user,

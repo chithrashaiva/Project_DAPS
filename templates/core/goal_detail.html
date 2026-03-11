@@ -31,11 +31,11 @@
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Penalty</span>
-                    <span class="meta-value">${{ goal.penalty_amount }}</span>
+                    <span class="meta-value">₹{{ goal.penalty_amount }}</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Potential Reward</span>
-                    <span class="meta-value positive">${{ goal.penalty_amount|add:goal.penalty_amount }}</span>
+                    <span class="meta-value positive">₹{{ goal.penalty_amount|add:goal.penalty_amount }}</span>
                 </div>
             </div>
 
@@ -66,7 +66,7 @@
                     <span class="txn-icon">{% if txn.type == 'reward' %}🟢{% else %}🔴{% endif %}</span>
                     <span>{{ txn.get_type_display }}</span>
                     <span class="txn-amount {% if txn.type == 'reward' %}positive{% else %}negative{% endif %}">
-                        {% if txn.type == 'reward' %}+{% else %}-{% endif %}${{ txn.amount }}
+                        {% if txn.type == 'reward' %}+{% else %}-{% endif %}₹{{ txn.amount }}
                     </span>
                 </div>
                 {% endfor %}

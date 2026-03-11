@@ -37,10 +37,12 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Wallet Balance</span>
-                    <span
-                        class="detail-value wallet-balance {% if profile.wallet_balance >= 0 %}positive{% else %}negative{% endif %}">
-                        ${{ profile.wallet_balance }}
-                    </span>
+                    <div class="wallet-badge-premium">
+                        <span
+                            class="{% if profile.wallet_balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}">
+                            ₹{{ profile.wallet_balance|floatformat:2 }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -62,6 +64,20 @@
                 </button>
             </form>
         </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="glass-card animate-fade-in" id="profile-delete-card" style="animation-delay: 0.2s; border-top: 4px solid var(--danger); margin-top: 2rem;">
+        <div class="card-header">
+            <h2 style="color: var(--danger);">⚠️ Danger Zone</h2>
+        </div>
+        <p class="text-muted" style="margin-bottom: 1rem;">Once you delete your account, there is no going back. Please be certain.</p>
+        <form method="post" action="{% url 'delete_account' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="return confirm('Are you sure you want to permanently delete your account?');">
+                Delete My Account
+            </button>
+        </form>
     </div>
 </div>
 {% endblock %}

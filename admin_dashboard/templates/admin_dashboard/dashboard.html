@@ -26,11 +26,16 @@
             <span class="stat-value">{{ success_rate }}%</span>
             <span class="stat-label">System-wide Success</span>
         </div>
-        <div class="stat-card glass-card">
-            <span class="stat-icon">💰</span>
-            <span class="stat-value">${{ total_rewards|floatformat:2 }}</span>
-            <span class="stat-label">Total Rewards Paid</span>
+        <div class="stat-card glass-card" style="border-color: var(--accent-primary-hover);">
+            <span class="stat-icon">🏦</span>
+            <span class="stat-value wallet-premium balance-positive">₹{{ bank_balance|floatformat:2 }}</span>
+            <span class="stat-label">Admin Bank Account</span>
         </div>
+    </div>
+
+    <div class="action-bar animate-fade-in" style="margin-bottom: 2rem;">
+        <a href="{% url 'admin_manage_funds' %}" class="btn btn-accent">💰 Manage System Funds</a>
+        <a href="{% url 'admin_user_list' %}" class="btn btn-primary">👥 Full User List</a>
     </div>
 
     <div class="grid grid-2">
@@ -40,18 +45,18 @@
             <div class="glass-card-inner" style="margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span>Total Penalties Collected:</span>
-                    <span style="color: var(--danger); font-weight: 700;">${{ total_penalties|floatformat:2 }}</span>
+                    <span style="color: var(--danger); font-weight: 700;">₹{{ total_penalties|floatformat:2 }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span>Total Rewards Distributed:</span>
-                    <span style="color: var(--success); font-weight: 700;">${{ total_rewards|floatformat:2 }}</span>
+                    <span style="color: var(--success); font-weight: 700;">₹{{ total_rewards|floatformat:2 }}</span>
                 </div>
             </div>
             <p class="page-subtitle" style="font-size: 0.8rem;">
                 DAPS operates on a 2x reward structure. Net system flow:
                 <span
                     style="color: {% if total_penalties > total_rewards %}var(--success){% else %}var(--danger){% endif %}; font-weight: 700;">
-                    ${{ total_penalties|subtract:total_rewards|abs_value|floatformat:2 }}
+                    ₹{{ total_penalties|subtract:total_rewards|abs_value|floatformat:2 }}
                 </span>
             </p>
         </div>

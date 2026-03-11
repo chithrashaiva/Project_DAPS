@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ProfileForm
 
 
@@ -15,22 +16,11 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            user.is_active = True  # Users are active immediately
+            user.save()
             
-            # Send Welcome Email
-            try:
-                send_mail(
-                    subject='Welcome to DAPS! 🚀',
-                    message=f'Hi {user.username},\n\nWelcome to the Daily Accountability Partner System (DAPS)!\n\nWe are excited to help you stay committed to your goals and build better habits through our Low-Friction Protocol.\n\nStart your journey by committing to your first goal today!\n\nBest,\nThe DAPS Team',
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=True,
-                )
-            except Exception:
-                pass
-
-            login(request, user)
-            messages.success(request, f'Welcome to DAPS, {user.username}! Your account has been created.')
-            return redirect('dashboard')
+            messages.success(request, 'Account created successfully! You can now log in.')
+            return redirect('login')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -48,7 +38,19 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            
+            remember_me = form.cleaned_data.get('remember_me')
+            if remember_me:
+                request.session.set_expiry(1209600)  # 2 weeks
+            else:
+                request.session.set_expiry(0)  # Browser close
+
             messages.success(request, f'Welcome back, {user.username}!')
+            
+            # Redirect admins/superusers to the admin portal if they try to use the regular login
+            if user.is_superuser or (hasattr(user, 'profile') and user.profile.role == 'admin'):
+                return redirect('admin_panel')
+                
             return redirect('dashboard')
         else:
             messages.error(request, 'Invalid username or password.')
@@ -80,3 +82,14 @@ def profile_view(request):
         'form': form,
         'profile': profile,
     })
+
+
+@login_required
+def delete_account_view(request):
+    if request.method == 'POST':
+        user = request.user
+        logout(request)
+        user.delete()
+        messages.success(request, 'Your account has been successfully deleted. We are sorry to see you go!')
+        return redirect('login')
+    return redirect('profile')

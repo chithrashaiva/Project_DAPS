@@ -29,6 +29,7 @@
                     id="nav-dashboard">
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
+                {% if user.profile.role != 'admin' %}
                 <a href="{% url 'goal_list' %}"
                     class="nav-link {% if request.resolver_match.url_name == 'goal_list' %}active{% endif %}"
                     id="nav-goals">
@@ -50,6 +51,7 @@
                     id="nav-partner-progress">
                     <span class="nav-icon">👁️</span> Partner View
                 </a>
+                {% endif %}
                 {% if user.profile.role == 'admin' %}
                 <a href="{% url 'admin_panel' %}"
                     class="nav-link {% if 'admin-dashboard' in request.path %}active{% endif %}" id="nav-admin-panel"

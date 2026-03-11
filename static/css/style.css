@@ -1520,3 +1520,54 @@ a.goal-item:hover {
 .toggle-password:hover {
     color: var(--text-primary);
 }
+/* --- Wallet 2.0 Premium Styles --- */
+.stat-value.wallet-premium {
+    font-size: 2.25rem;
+    letter-spacing: -1px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    font-weight: 900;
+}
+
+.balance-positive {
+    color: #10b981; /* Fallback */
+    background: linear-gradient(135deg, #10b981, #6ee7b7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+    animation: balance-glow-success 3s infinite ease-in-out;
+}
+
+.balance-negative {
+    color: #ef4444; /* Fallback */
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+}
+
+.wallet-badge-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1.25rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    font-size: 1.2rem;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.02);
+    transition: all var(--transition-base);
+}
+
+.wallet-badge-premium:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+@keyframes balance-glow-success {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.2)); }
+    50% { filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.6)); }
+}

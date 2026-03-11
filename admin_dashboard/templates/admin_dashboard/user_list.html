@@ -3,9 +3,14 @@
 
 {% block content %}
 <div class="page-container" id="admin-user-list">
-    <div class="page-header">
-        <h1>👥 User Management</h1>
-        <p class="page-subtitle">Monitor and manage all system participants</p>
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h1>👥 User Management</h1>
+            <p class="page-subtitle">Monitor and manage all system participants</p>
+        </div>
+        <a href="{% url 'admin_create_user' %}" class="btn btn-primary" style="margin-top: 0.5rem;">
+            ➕ Create User
+        </a>
     </div>
 
     <!-- Search -->
@@ -27,6 +32,7 @@
                         <th style="padding: 1rem;">User</th>
                         <th style="padding: 1rem;">Email</th>
                         <th style="padding: 1rem;">Role</th>
+                        <th style="padding: 1rem;">Status</th>
                         <th style="padding: 1rem;">Goals</th>
                         <th style="padding: 1rem;">Wallet</th>
                         <th style="padding: 1rem; text-align: right;">Action</th>
@@ -45,12 +51,21 @@
                                 {{ user_item.profile.get_role_display }}
                             </span>
                         </td>
+                        <td style="padding: 1rem;">
+                            <span class="badge" style="background: var(--success); font-weight: 500;">Active</span>
+                        </td>
                         <td style="padding: 1rem;">{{ user_item.goal_count }}</td>
-                        <td style="padding: 1rem; font-weight: 700; color: var(--success);">${{
-                            user_item.profile.wallet_balance }}</td>
-                        <td style="padding: 1rem; text-align: right;">
-                            <a href="{% url 'admin_user_detail' user_item.id %}" class="btn btn-sm btn-outline">View
-                                Details</a>
+                        <td style="padding: 1rem; font-weight: 700; color: var(--success);">₹{{ user_item.profile.wallet_balance }}</td>
+                        <td style="padding: 1rem; text-align: right; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <a href="{% url 'admin_user_detail' user_item.id %}" class="btn btn-sm btn-outline">View Details</a>
+                            {% if user_item != request.user and not user_item.is_superuser %}
+                            <form method="post" action="{% url 'admin_delete_user' user_item.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger);" onclick="return confirm('WARNING: Are you sure you want to permanently delete user {{ user_item.username }}?');">
+                                    Delete
+                                </button>
+                            </form>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

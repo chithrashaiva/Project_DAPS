@@ -63,6 +63,14 @@ class LoginForm(AuthenticationForm):
             'id': 'login-password',
         })
     )
+    remember_me = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-checkbox',
+            'id': 'login-remember',
+        }),
+        label="Remember me"
+    )
 
 
 class ProfileForm(forms.ModelForm):
