@@ -40,9 +40,12 @@
         </a>
         {% if pending_requests > 0 %}
         <a href="{% url 'partner_requests' %}" class="btn btn-accent" id="pending-requests-btn">
-            📬 {{ pending_requests }} Pending Request{{ pending_requests|pluralize }}
+            📬 {{ pending_requests }} Partner Request{{ pending_requests|pluralize }}
         </a>
         {% endif %}
+        <a href="{% url 'goal_invitations' %}" class="btn btn-outline" id="goal-invitations-btn">
+            🎯 Goal Invitations
+        </a>
     </div>
 
     <!-- Low-Friction Protocol Phases -->
@@ -66,6 +69,9 @@
                             == 'in_progress' %}🔄{% else %}⏳{% endif %}
                         </span>
                         <span class="goal-title">{{ goal.title }}</span>
+                        {% if goal.date != today %}
+                        <span class="date-badge">{{ goal.date|date:"M j" }}</span>
+                        {% endif %}
                     </div>
                     <div class="goal-meta">
                         <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
@@ -95,6 +101,9 @@
                             == 'in_progress' %}🔄{% else %}⏳{% endif %}
                         </span>
                         <span class="goal-title">{{ goal.title }}</span>
+                        {% if goal.date != today %}
+                        <span class="date-badge">{{ goal.date|date:"M j" }}</span>
+                        {% endif %}
                     </div>
                     <div class="goal-meta">
                         <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
@@ -124,6 +133,9 @@
                             == 'in_progress' %}🔄{% else %}⏳{% endif %}
                         </span>
                         <span class="goal-title">{{ goal.title }}</span>
+                        {% if goal.date != today %}
+                        <span class="date-badge">{{ goal.date|date:"M j" }}</span>
+                        {% endif %}
                     </div>
                     <div class="goal-meta">
                         <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
@@ -136,6 +148,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Shared/Collaborative Goals -->
+    {% if shared_goals %}
+    <div class="phases-section" id="shared-goals-section">
+        <h2 class="section-title">🤝 Collaborative Goals</h2>
+        <div class="phase-block glass-card animate-slide-up" id="phase-shared">
+            <div class="goals-list">
+                {% for goal in shared_goals %}
+                <a href="{% url 'goal_detail' goal.id %}" class="goal-item goal-{{ goal.status }}"
+                    id="shared-goal-{{ goal.id }}">
+                    <div class="goal-info">
+                        <span class="goal-status-icon">
+                            {% if goal.status == 'completed' %}✅{% elif goal.status == 'failed' %}❌{% elif goal.status
+                            == 'in_progress' %}🔄{% else %}⏳{% endif %}
+                        </span>
+                        <span class="goal-title">{{ goal.title }}</span>
+                        {% if goal.date != today %}
+                        <span class="date-badge">{{ goal.date|date:"M j" }}</span>
+                        {% endif %}
+                        <span class="owner-badge">Owner: {{ goal.user.username }}</span>
+                    </div>
+                    <div class="goal-meta">
+                        <span class="goal-penalty">₹{{ goal.penalty_amount }}</span>
+                        <span class="goal-deadline">Due {{ goal.deadline|date:"g:i A" }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Partner Quick View & Transactions -->
     <div class="grid grid-2" id="dashboard-bottom">

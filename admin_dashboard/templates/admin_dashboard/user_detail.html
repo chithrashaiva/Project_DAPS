@@ -44,7 +44,7 @@
                             {% else %}⏳{% endif %}
                         </span>
                         <div>
-                            <span class="goal-title">{{ goal.title }}</span>
+                            <span class="goal-title">{{ goal.title }}{% if goal.user != managed_user %} <span class="owner-badge">Owner: {{ goal.user.username }}</span>{% endif %}</span>
                             <div class="goal-meta" style="margin-top: 0.2rem;">{{ goal.date|date:"M d" }} • {{
                                 goal.get_phase_display }}</div>
                         </div>

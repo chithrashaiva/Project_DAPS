@@ -11,4 +11,8 @@ urlpatterns = [
     path('partners/requests/', views.partner_requests, name='partner_requests'),
     path('partners/requests/<int:request_id>/<str:action>/', views.handle_partner_request, name='handle_partner_request'),
     path('partners/progress/', views.partner_progress, name='partner_progress'),
+    path('goals/invitations/', views.goal_invitations, name='goal_invitations'),
+    path('goals/invitations/<int:invitation_id>/<str:action>/', views.handle_goal_invitation, name='handle_goal_invitation'),
+    path('goals/<int:goal_id>/invite/', views.invite_partner_to_goal, name='invite_partner_to_goal'),
+    path('partners/propose-goal/', views.propose_goal, name='propose_goal'),
 ]

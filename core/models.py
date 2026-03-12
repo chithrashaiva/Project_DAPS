@@ -39,6 +39,8 @@ class DailyGoal(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='goals')
+    collaborators = models.ManyToManyField(User, related_name='collaborative_goals', blank=True)
+    is_shared = models.BooleanField(default=False)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, default='')
     date = models.DateField(default=timezone.now)
@@ -89,3 +91,37 @@ class PenaltyReward(models.Model):
 
     def __str__(self):
         return f"{self.type.title()}: ${self.amount} for {self.user.username}"
+
+
+class GoalCollaborationRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    goal = models.ForeignKey(DailyGoal, on_delete=models.CASCADE, related_name='collaboration_requests')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_goal_requests')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_goal_requests')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('goal', 'sender', 'receiver')
+
+    def __str__(self):
+        return f"Request for {self.goal.title} from {self.sender.username}"
+
+
+class GoalMessage(models.Model):
+    goal = models.ForeignKey(DailyGoal, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"Msg from {self.sender.username} on {self.goal.title}"

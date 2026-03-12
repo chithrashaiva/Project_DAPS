@@ -16,6 +16,9 @@
             <div class="partner-profile-info">
                 <h2>{{ partner.username }}</h2>
                 <p>{{ partner.email }}</p>
+                <div style="margin-top: 1rem;">
+                    <a href="{% url 'propose_goal' %}" class="btn btn-primary btn-sm">💡 Suggest Shared Goal</a>
+                </div>
             </div>
         </div>
         <div class="stats-row partner-stats">

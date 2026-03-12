@@ -80,8 +80,12 @@ def admin_dashboard_view(request):
 def user_list_view(request):
     """List of all users with performance metrics."""
     users = User.objects.all().select_related('profile').annotate(
-        goal_count=Count('goals'),
+        owned_goal_count=Count('goals', distinct=True),
+        collab_goal_count=Count('collaborative_goals', distinct=True),
     )
+    # Total count for the list
+    for user in users:
+        user.goal_count = user.owned_goal_count + user.collab_goal_count
     
     query = request.GET.get('q')
     if query:
@@ -94,7 +98,9 @@ def user_detail_view(request, user_id):
     """Detailed performance view for a single user."""
     user = get_object_or_404(User, id=user_id)
     profile = user.profile
-    goals = DailyGoal.objects.filter(user=user).order_by('-date')
+    goals = DailyGoal.objects.filter(
+        Q(user=user) | Q(collaborators=user)
+    ).distinct().order_by('-date', '-created_at')
     transactions = PenaltyReward.objects.filter(user=user).order_by('-applied_at')
     
     context = {

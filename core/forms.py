@@ -5,7 +5,7 @@ from .models import DailyGoal, ProgressLog
 class GoalForm(forms.ModelForm):
     class Meta:
         model = DailyGoal
-        fields = ('title', 'description', 'deadline', 'phase', 'penalty_amount')
+        fields = ('title', 'description', 'deadline', 'phase', 'penalty_amount', 'is_shared')
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -33,6 +33,10 @@ class GoalForm(forms.ModelForm):
                 'min': '0',
                 'step': '0.01',
                 'id': 'goal-penalty',
+            }),
+            'is_shared': forms.CheckboxInput(attrs={
+                'class': 'form-checkbox',
+                'id': 'goal-is-shared',
             }),
         }
 

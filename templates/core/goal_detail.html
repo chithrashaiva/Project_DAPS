@@ -110,6 +110,69 @@
         </div>
     </div>
 
+    <!-- Collaboration Section -->
+    <div class="grid grid-2" style="margin-top: 2rem;">
+        <!-- Collaborators -->
+        <div class="glass-card animate-fade-in" id="collaborators-card">
+            <div class="card-header">
+                <h2>🤝 Collaborators</h2>
+                {% if goal.user == request.user and request.user.profile.partner %}
+                    {% if not goal.is_shared or request.user.profile.partner not in goal.collaborators.all %}
+                    <a href="{% url 'invite_partner_to_goal' goal.id %}" class="btn btn-primary btn-sm" id="invite-partner-btn">
+                        ➕ Invite Partner
+                    </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="collaborators-list">
+                <div class="collaborator-item">
+                    <span class="collab-avatar">{{ goal.user.username|first|upper }}</span>
+                    <div class="collab-info">
+                        <span class="collab-name">{{ goal.user.username }}</span>
+                        <span class="collab-role">Owner</span>
+                    </div>
+                </div>
+                {% for collab in goal.collaborators.all %}
+                <div class="collaborator-item">
+                    <span class="collab-avatar">{{ collab.username|first|upper }}</span>
+                    <div class="collab-info">
+                        <span class="collab-name">{{ collab.username }}</span>
+                        <span class="collab-role">Partner</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Shared Chat -->
+        <div class="glass-card animate-fade-in" id="chat-card" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <h2>💬 Shared Chat</h2>
+            </div>
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-box">
+                    {% for msg in chat_messages %}
+                    <div class="chat-message {% if msg.sender == request.user %}msg-sent{% else %}msg-received{% endif %}">
+                        <span class="msg-sender">{{ msg.sender.username }}</span>
+                        <p class="msg-content">{{ msg.content }}</p>
+                        <span class="msg-time">{{ msg.timestamp|date:"g:i A" }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="empty-state">No messages yet. Say hi! 👋</p>
+                    {% endfor %}
+                </div>
+                <form method="post" class="chat-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="send_message">
+                    <div class="chat-input-wrapper">
+                        <input type="text" name="content" placeholder="Type a message..." class="chat-input" required>
+                        <button type="submit" class="btn btn-accent btn-sm">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <a href="{% url 'dashboard' %}" class="btn btn-outline back-link" id="back-to-dashboard">← Back to Dashboard</a>
 </div>
 {% endblock %}

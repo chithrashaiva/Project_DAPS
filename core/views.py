@@ -7,7 +7,7 @@ from django.db.models import Q, Sum
 from decimal import Decimal
 from accounts.models import UserProfile, SystemWallet
 
-from .models import PartnerRequest, DailyGoal, ProgressLog, PenaltyReward
+from .models import PartnerRequest, DailyGoal, ProgressLog, PenaltyReward, GoalCollaborationRequest, GoalMessage
 from .forms import GoalForm, ProgressLogForm, PartnerSearchForm
 from functools import wraps
 
@@ -28,11 +28,19 @@ def dashboard(request):
     today = timezone.now().date()
     profile = request.user.profile
 
-    # Today's goals grouped by phase
+    # Active goals (including shared and past but not finished)
     todays_goals = DailyGoal.objects.filter(user=request.user, date=today)
-    morning_goals = todays_goals.filter(phase='morning')
-    midday_goals = todays_goals.filter(phase='midday')
-    evening_goals = todays_goals.filter(phase='evening')
+    active_goals = DailyGoal.objects.filter(
+        Q(user=request.user) | Q(collaborators=request.user),
+        status__in=['pending', 'in_progress']
+    )
+    
+    # Combined list for dashboard phases (Today's goals + Past Active)
+    all_visible_goals = (todays_goals | active_goals).distinct()
+    
+    morning_goals = all_visible_goals.filter(phase='morning')
+    midday_goals = all_visible_goals.filter(phase='midday')
+    evening_goals = all_visible_goals.filter(phase='evening')
 
     # Stats
     total_goals = DailyGoal.objects.filter(user=request.user).count()
@@ -40,14 +48,10 @@ def dashboard(request):
     failed_goals = DailyGoal.objects.filter(user=request.user, status='failed').count()
     completion_rate = round((completed_goals / total_goals * 100), 1) if total_goals > 0 else 0
 
-    # Check overdue goals and apply consequences
-    overdue_goals = DailyGoal.objects.filter(
-        user=request.user,
-        status__in=['pending', 'in_progress'],
-        deadline__lt=timezone.now()
-    )
+    # Check overdue goals and apply consequences (for all active goals the user owns or collaborates on)
+    overdue_goals = active_goals.filter(deadline__lt=timezone.now())
     for goal in overdue_goals:
-        _apply_penalty(request.user, goal)
+        _apply_penalty(goal.user, goal) # _apply_penalty handles distribution
     
     if overdue_goals.exists():
         profile.refresh_from_db()
@@ -64,11 +68,15 @@ def dashboard(request):
     # Pending partner requests
     pending_requests = PartnerRequest.objects.filter(to_user=request.user, status='pending').count()
 
+    # Shared/Collaborative goals (for special section if needed, though they are now in phases too)
+    shared_goals = active_goals.filter(is_shared=True)
+
     context = {
         'today': today,
         'morning_goals': morning_goals,
         'midday_goals': midday_goals,
         'evening_goals': evening_goals,
+        'shared_goals': shared_goals,
         'total_goals': total_goals,
         'completed_goals': completed_goals,
         'failed_goals': failed_goals,
@@ -93,7 +101,22 @@ def create_goal(request):
             goal.user = request.user
             goal.date = timezone.now().date()
             goal.save()
-            messages.success(request, f'Goal "{goal.title}" committed! Stay focused. 💪')
+            
+            # If shared and has partner, send invitation
+            if goal.is_shared:
+                profile = request.user.profile
+                if profile.partner:
+                    GoalCollaborationRequest.objects.create(
+                        goal=goal,
+                        sender=request.user,
+                        receiver=profile.partner
+                    )
+                    messages.success(request, f'Goal "{goal.title}" created and invitation sent to {profile.partner.username}! 🤝')
+                else:
+                    messages.warning(request, f'Goal "{goal.title}" created as shared, but you don\'t have a partner to invite yet.')
+            else:
+                messages.success(request, f'Goal "{goal.title}" committed! Stay focused. 💪')
+            
             return redirect('dashboard')
     else:
         form = GoalForm()
@@ -103,9 +126,49 @@ def create_goal(request):
 
 @login_required
 @user_only
+def propose_goal(request):
+    """Suggest a shared goal to a partner."""
+    profile = request.user.profile
+    partner = profile.partner
+    
+    if not partner:
+        messages.error(request, 'You need a partner to suggest a goal.')
+        return redirect('find_partners')
+
+    if request.method == 'POST':
+        form = GoalForm(request.POST)
+        if form.is_valid():
+            goal = form.save(commit=False)
+            goal.user = request.user
+            goal.date = timezone.now().date()
+            goal.is_shared = True # Always shared for suggestions
+            goal.save()
+            
+            # Send invitation
+            GoalCollaborationRequest.objects.create(
+                goal=goal,
+                sender=request.user,
+                receiver=partner
+            )
+            messages.success(request, f'Goal suggested! Invitation sent to {partner.username}. 💡')
+            return redirect('partner_progress')
+    else:
+        # Pre-set is_shared for suggestions
+        form = GoalForm(initial={'is_shared': True})
+
+    return render(request, 'core/goal_form.html', {
+        'form': form, 
+        'action': 'Suggest',
+        'is_suggestion': True
+    })
+
+
+@login_required
+@user_only
 def update_goal(request, goal_id):
     """Update goal status or add progress notes."""
-    goal = get_object_or_404(DailyGoal, id=goal_id, user=request.user)
+    # Support for collaborative goals
+    goal = get_object_or_404(DailyGoal, Q(user=request.user) | Q(collaborators=request.user), id=goal_id)
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -114,8 +177,8 @@ def update_goal(request, goal_id):
             if goal.status != 'completed':
                 goal.status = 'completed'
                 goal.save()
-                _apply_reward(request.user, goal)
-                messages.success(request, f'🎉 Goal "{goal.title}" completed! Reward applied!')
+                _apply_reward(goal.user, goal)
+                messages.success(request, f'🎉 Goal "{goal.title}" completed! Rewards distributed!')
             return redirect('dashboard')
 
         elif action == 'in_progress':
@@ -133,16 +196,94 @@ def update_goal(request, goal_id):
                 messages.success(request, 'Progress note added!')
             return redirect('goal_detail', goal_id=goal.id)
 
+        elif action == 'send_message':
+            content = request.POST.get('content')
+            if content:
+                GoalMessage.objects.create(
+                    goal=goal,
+                    sender=request.user,
+                    content=content
+                )
+            return redirect('goal_detail', goal_id=goal.id)
+
     note_form = ProgressLogForm()
     progress_logs = goal.progress_logs.all()
     transactions = goal.transactions.all()
+    chat_messages = goal.messages.all()
 
     return render(request, 'core/goal_detail.html', {
         'goal': goal,
         'note_form': note_form,
         'progress_logs': progress_logs,
         'transactions': transactions,
+        'chat_messages': chat_messages,
     })
+
+
+@login_required
+@user_only
+def goal_invitations(request):
+    """View and manage goal collaboration invitations."""
+    incoming = GoalCollaborationRequest.objects.filter(receiver=request.user, status='pending')
+    outgoing = GoalCollaborationRequest.objects.filter(sender=request.user, status='pending')
+
+    return render(request, 'core/goal_invitations.html', {
+        'incoming': incoming,
+        'outgoing': outgoing,
+    })
+
+
+@login_required
+@user_only
+def handle_goal_invitation(request, invitation_id, action):
+    """Accept or reject a goal collaboration invitation."""
+    invitation = get_object_or_404(GoalCollaborationRequest, id=invitation_id, receiver=request.user, status='pending')
+
+    if action == 'accept':
+        invitation.status = 'accepted'
+        invitation.save()
+        invitation.goal.collaborators.add(request.user)
+        messages.success(request, f'You have joined the goal: {invitation.goal.title}! 🤝')
+    elif action == 'reject':
+        invitation.status = 'rejected'
+        invitation.save()
+        messages.info(request, f'Invitation for {invitation.goal.title} rejected.')
+
+    return redirect('goal_invitations')
+
+
+@login_required
+@user_only
+def invite_partner_to_goal(request, goal_id):
+    """Invite partner to an existing goal."""
+    goal = get_object_or_404(DailyGoal, id=goal_id, user=request.user)
+    profile = request.user.profile
+    partner = profile.partner
+
+    if not partner:
+        messages.error(request, "You don't have a partner to invite.")
+        return redirect('goal_detail', goal_id=goal.id)
+
+    if goal.collaborators.filter(id=partner.id).exists():
+        messages.warning(request, "Your partner is already a collaborator.")
+        return redirect('goal_detail', goal_id=goal.id)
+
+    # Check if a pending invitation already exists
+    exists = GoalCollaborationRequest.objects.filter(goal=goal, receiver=partner, status='pending').exists()
+    if exists:
+        messages.warning(request, "A pending invitation has already been sent.")
+    else:
+        GoalCollaborationRequest.objects.create(
+            goal=goal,
+            sender=request.user,
+            receiver=partner
+        )
+        if not goal.is_shared:
+            goal.is_shared = True
+            goal.save()
+        messages.success(request, f'Invitation sent to {partner.username}!')
+
+    return redirect('goal_detail', goal_id=goal.id)
 
 
 @login_required
@@ -294,6 +435,7 @@ def partner_progress(request):
 
     return render(request, 'core/partner_progress.html', {
         'partner': partner,
+        'partner_profile': partner.profile,
         'partner_goals_today': partner_goals_today,
         'partner_goals_all': partner_goals[:30],
         'total_goals': total,
@@ -302,8 +444,8 @@ def partner_progress(request):
     })
 
 
-def _apply_penalty(user, goal):
-    """Apply penalty for a failed goal."""
+def _apply_penalty(owner, goal):
+    """Apply penalty for a failed goal. Distributed among collaborators if shared."""
     if goal.transactions.filter(type='penalty').exists():
         return  # Already penalized
 
@@ -311,41 +453,47 @@ def _apply_penalty(user, goal):
     goal.save()
 
     penalty_amount = goal.penalty_amount
-    profile = user.profile
-    profile.wallet_balance -= penalty_amount
-    profile.save()
-
+    participants = [owner] + list(goal.collaborators.all())
+    
     # Update Admin Bank
     system_bank = SystemWallet.get_wallet()
-    system_bank.balance += penalty_amount
+    system_bank.balance += (penalty_amount * len(participants))
     system_bank.save()
 
-    PenaltyReward.objects.create(
-        user=user,
-        goal=goal,
-        amount=penalty_amount,
-        type='penalty',
-    )
+    for user in participants:
+        profile = user.profile
+        profile.wallet_balance -= penalty_amount
+        profile.save()
+
+        PenaltyReward.objects.create(
+            user=user,
+            goal=goal,
+            amount=penalty_amount,
+            type='penalty',
+        )
 
 
-def _apply_reward(user, goal):
-    """Apply reward (2x penalty) for a completed goal."""
+def _apply_reward(owner, goal):
+    """Apply reward (2x penalty) for a completed goal. Distributed among collaborators."""
     if goal.transactions.filter(type='reward').exists():
         return  # Already rewarded
 
-    reward_amount = goal.penalty_amount * 2
-    profile = user.profile
-    profile.wallet_balance += reward_amount
-    profile.save()
-
+    reward_individual = goal.penalty_amount * 2
+    participants = [owner] + list(goal.collaborators.all())
+    
     # Update Admin Bank (Payout)
     system_bank = SystemWallet.get_wallet()
-    system_bank.balance -= reward_amount
+    system_bank.balance -= (reward_individual * len(participants))
     system_bank.save()
 
-    PenaltyReward.objects.create(
-        user=user,
-        goal=goal,
-        amount=reward_amount,
-        type='reward',
-    )
+    for user in participants:
+        profile = user.profile
+        profile.wallet_balance += reward_individual
+        profile.save()
+
+        PenaltyReward.objects.create(
+            user=user,
+            goal=goal,
+            amount=reward_individual,
+            type='reward',
+        )
